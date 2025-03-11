@@ -24,6 +24,27 @@ DEFINE_FLAG_BOOL(enable_prom_stream_scrape, "enable prom stream scrape", true);
 using namespace std;
 
 namespace logtail::prom {
+size_t StreamScraper::mMaxSampleLength = 8 * 1024;
+StreamScraper::StreamScraper(Labels labels,
+                             QueueKey queueKey,
+                             size_t inputIndex,
+                             std::string hash,
+                             EventPool* eventPool,
+                             std::chrono::system_clock::time_point scrapeTime)
+    : mEventGroup(PipelineEventGroup(std::make_shared<SourceBuffer>())),
+      mHash(std::move(hash)),
+      mEventPool(eventPool),
+      mQueueKey(queueKey),
+      mInputIndex(inputIndex),
+      mTargetLabels(std::move(labels)) {
+    mScrapeTimestampMilliSec
+        = std::chrono::duration_cast<std::chrono::milliseconds>(scrapeTime.time_since_epoch()).count();
+    if ((size_t)INT64_FLAG(prom_max_sample_length) > mMaxSampleLength
+        && (size_t)INT64_FLAG(prom_max_sample_length) < 512 * 1024) {
+        mMaxSampleLength = (size_t)INT64_FLAG(prom_max_sample_length);
+    }
+}
+
 size_t StreamScraper::MetricWriteCallback(char* buffer, size_t size, size_t nmemb, void* data) {
     uint64_t sizes = size * nmemb;
 
@@ -50,7 +71,7 @@ size_t StreamScraper::MetricWriteCallback(char* buffer, size_t size, size_t nmem
     if (begin < sizes) {
         body->mCache.append(buffer + begin, sizes - begin);
         // limit the last line cache size to prom_max_sample_length bytes
-        if (body->mCache.size() > (size_t)INT64_FLAG(prom_max_sample_length)) {
+        if (body->mCache.size() > mMaxSampleLength) {
             LOG_WARNING(sLogger, ("stream scraper", "cache is too large, drop it."));
             body->mCache.clear();
         }
