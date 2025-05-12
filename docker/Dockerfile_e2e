@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM sls-opensource-registry.cn-shanghai.cr.aliyuncs.com/loongcollector-community-edition/loongcollector-build-linux:2.1.2
+FROM sls-opensource-registry.cn-shanghai.cr.aliyuncs.com/loongcollector-community-edition/loongcollector-build-linux:2.1.3
 
 ARG HOST_OS=Linux
 ARG VERSION=0.0.1
@@ -37,7 +37,7 @@ RUN chown -R $(whoami) /loongcollector && \
 COPY ./output/libGoPluginBase.so /loongcollector/
 COPY ./example_config/quick_start/loongcollector_config.json /loongcollector/conf/instance_config/local/loongcollector_config.json
 COPY ./output/libGoPluginAdapter.so /loongcollector/
-
+COPY ./output/libeBPFDriver.so /loongcollector/
 ENV HOST_OS=$HOST_OS
 ENV LOGTAIL_VERSION=$VERSION
 
