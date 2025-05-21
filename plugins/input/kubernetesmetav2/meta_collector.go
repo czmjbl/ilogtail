@@ -62,6 +62,18 @@ func (m *metaCollector) Start() error {
 		k8smeta.POD_SERVICE:              m.processPodServiceLink,
 		k8smeta.POD_CONTAINER:            m.processPodContainerLink,
 		k8smeta.INGRESS_SERVICE:          m.processIngressServiceLink,
+
+		// add namesapce to xx link processor
+		k8smeta.POD_NAMESPACE:                   m.processPodNamespaceLink,
+		k8smeta.SERVICE_NAMESPACE:               m.processServiceNamespaceLink,
+		k8smeta.DEPLOYMENT_NAMESPACE:            m.processDeploymentNamespaceLink,
+		k8smeta.DAEMONSET_NAMESPACE:             m.processDaemonSetNamespaceLink,
+		k8smeta.STATEFULSET_NAMESPACE:           m.processStatefulNamespaceSetLink,
+		k8smeta.CONFIGMAP_NAMESPACE:             m.processConfigMapNamespaceLink,
+		k8smeta.JOB_NAMESPACE:                   m.processJobNamespaceLink,
+		k8smeta.CRONJOB_NAMESPACE:               m.processCronJobNamespaceLink,
+		k8smeta.PERSISTENTVOLUMECLAIM_NAMESPACE: m.processPVCNamespaceLink,
+		k8smeta.INGRESS_NAMESPACE:               m.processIngressNamespaceLink,
 	}
 
 	if m.serviceK8sMeta.Pod {
@@ -149,6 +161,37 @@ func (m *metaCollector) Start() error {
 	if m.serviceK8sMeta.Ingress && m.serviceK8sMeta.Service && m.serviceK8sMeta.Ingress2Service != "" {
 		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.INGRESS_SERVICE, m.handleEvent, m.serviceK8sMeta.Interval)
 	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.Pod && m.serviceK8sMeta.Namespace2Pod != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.POD_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.Service && m.serviceK8sMeta.Namespace2Service != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.SERVICE_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.Deployment && m.serviceK8sMeta.Namespace2Deployment != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.DEPLOYMENT_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.DaemonSet && m.serviceK8sMeta.Namespace2DaemonSet != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.DAEMONSET_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.StatefulSet && m.serviceK8sMeta.Namespace2StatefulSet != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.STATEFULSET_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.Configmap && m.serviceK8sMeta.Namespace2Configmap != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.CONFIGMAP_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.Job && m.serviceK8sMeta.Namespace2Job != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.JOB_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.CronJob && m.serviceK8sMeta.Namespace2CronJob != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.CRONJOB_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.PersistentVolumeClaim && m.serviceK8sMeta.Namespace2PersistentVolumeClaim != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.PERSISTENTVOLUMECLAIM_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+	if m.serviceK8sMeta.Namespace && m.serviceK8sMeta.Ingress && m.serviceK8sMeta.Namespace2Ingress != "" {
+		m.serviceK8sMeta.metaManager.RegisterSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName, k8smeta.INGRESS_NAMESPACE, m.handleEvent, m.serviceK8sMeta.Interval)
+	}
+
 	go m.sendInBackground()
 	return nil
 }
@@ -157,6 +200,22 @@ func (m *metaCollector) Stop() error {
 	m.serviceK8sMeta.metaManager.UnRegisterAllSendFunc(m.serviceK8sMeta.context.GetProject(), m.serviceK8sMeta.configName)
 	close(m.stopCh)
 	return nil
+}
+
+func canClusterLinkDirectly(resourceType string, serviceK8sMeta *ServiceK8sMeta) (bool, string) {
+	if strings.ToLower(resourceType) == "namespace" && serviceK8sMeta.Namespace && serviceK8sMeta.Cluster2Namespace != "" {
+		return true, serviceK8sMeta.Cluster2Namespace
+	}
+	if strings.ToLower(resourceType) == "node" && serviceK8sMeta.Node && serviceK8sMeta.Cluster2Node != "" {
+		return true, serviceK8sMeta.Cluster2Node
+	}
+	if strings.ToLower(resourceType) == "persistentvolume" && serviceK8sMeta.PersistentVolume && serviceK8sMeta.Cluster2PersistentVolume != "" {
+		return true, serviceK8sMeta.Cluster2PersistentVolume
+	}
+	if strings.ToLower(resourceType) == "storageclass" && serviceK8sMeta.StorageClass && serviceK8sMeta.Cluster2StorageClass != "" {
+		return true, serviceK8sMeta.Cluster2StorageClass
+	}
+	return false, ""
 }
 
 func (m *metaCollector) handleEvent(event []*k8smeta.K8sMetaEvent) {
@@ -182,8 +241,9 @@ func (m *metaCollector) handleAddOrUpdate(event *k8smeta.K8sMetaEvent) {
 		logs := processor(event.Object, "Update")
 		for _, log := range logs {
 			m.send(log, isEntity(event.Object.ResourceType))
-			if isEntity(event.Object.ResourceType) {
-				link := m.generateEntityClusterLink(log)
+			linkClusterDirectly, linkRelationType := canClusterLinkDirectly(event.Object.ResourceType, m.serviceK8sMeta)
+			if isEntity(event.Object.ResourceType) && linkClusterDirectly {
+				link := m.generateEntityClusterLink(log, linkRelationType)
 				m.send(link, true)
 			}
 		}
@@ -195,8 +255,9 @@ func (m *metaCollector) handleDelete(event *k8smeta.K8sMetaEvent) {
 		logs := processor(event.Object, "Expire")
 		for _, log := range logs {
 			m.send(log, isEntity(event.Object.ResourceType))
-			if isEntity(event.Object.ResourceType) {
-				link := m.generateEntityClusterLink(log)
+			linkClusterDirectly, linkRelationType := canClusterLinkDirectly(event.Object.ResourceType, m.serviceK8sMeta)
+			if isEntity(event.Object.ResourceType) && linkClusterDirectly {
+				link := m.generateEntityClusterLink(log, linkRelationType)
 				m.send(link, true)
 			}
 		}
@@ -348,7 +409,7 @@ func (m *metaCollector) generateClusterEntity() models.PipelineEvent {
 	return log
 }
 
-func (m *metaCollector) generateEntityClusterLink(entityEvent models.PipelineEvent) models.PipelineEvent {
+func (m *metaCollector) generateEntityClusterLink(entityEvent models.PipelineEvent, linkRelationType string) models.PipelineEvent {
 	content := entityEvent.(*models.Log).Contents
 	log := &models.Log{}
 	log.Contents = models.NewLogContents()
@@ -358,8 +419,7 @@ func (m *metaCollector) generateEntityClusterLink(entityEvent models.PipelineEve
 	log.Contents.Add(entityLinkDestDomainFieldName, m.serviceK8sMeta.domain)
 	log.Contents.Add(entityLinkDestEntityTypeFieldName, content.Get(entityTypeFieldName))
 	log.Contents.Add(entityLinkDestEntityIDFieldName, content.Get(entityIDFieldName))
-
-	log.Contents.Add(entityLinkRelationTypeFieldName, "runs")
+	log.Contents.Add(entityLinkRelationTypeFieldName, linkRelationType)
 	log.Contents.Add(entityMethodFieldName, content.Get(entityMethodFieldName))
 
 	log.Contents.Add(entityFirstObservedTimeFieldName, content.Get(entityFirstObservedTimeFieldName))
@@ -404,4 +464,18 @@ func convertPipelineEvent2Log(event models.PipelineEvent) *protocol.Log {
 
 func isEntity(resourceType string) bool {
 	return !strings.Contains(resourceType, k8smeta.LINK_SPLIT_CHARACTER)
+}
+
+func safeGetInt32String(pointer *int32) string {
+	if pointer == nil {
+		return ""
+	}
+	return strconv.FormatInt(int64(*pointer), 10)
+}
+
+func safeGetBoolString(pointer *bool) string {
+	if pointer == nil {
+		return ""
+	}
+	return strconv.FormatBool(*pointer)
 }
