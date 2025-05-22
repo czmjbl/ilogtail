@@ -111,7 +111,7 @@ bool StreamScraper::PushEventGroup(PipelineEventGroup&& eGroup) const {
     auto item = make_unique<ProcessQueueItem>(std::move(eGroup), mInputIndex);
 #ifdef APSARA_UNIT_TEST_MAIN
     mItem.emplace_back(std::move(item));
-    return;
+    return true;
 #endif
     int i = 0;
     QueueStatus res = QueueStatus::QUEUE_FULL;
