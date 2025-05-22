@@ -106,7 +106,7 @@ require (
 	github.com/containernetworking/cni v1.1.1 // indirect
 	github.com/containernetworking/plugins v1.1.1 // indirect
 	github.com/containers/ocicrypt v1.1.3 // indirect
-	github.com/coreos/go-systemd/v22 v22.4.0 // indirect
+	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
@@ -122,7 +122,7 @@ require (
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.0.0-20211216131617-bbee439d559c // indirect
-	github.com/emicklei/go-restful v2.16.0+incompatible // indirect
+	github.com/emicklei/go-restful v2.15.0+incompatible // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/frankban/quicktest v1.14.5 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -200,7 +200,7 @@ require (
 	github.com/narqo/go-dogstatsd-parser v0.2.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
-	github.com/opencontainers/runc v1.1.3 // indirect
+	github.com/opencontainers/runc v1.1.12 // indirect
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417 // indirect
 	github.com/opencontainers/selinux v1.10.1 // indirect
 	github.com/oschwald/maxminddb-golang v1.2.1 // indirect
@@ -284,6 +284,7 @@ replace (
 	github.com/elastic/beats/v7 => ./external/github.com/elastic/beats/v7
 	github.com/jeromer/syslogparser => ./external/github.com/jeromer/syslogparser
 	github.com/mindprince/gonvml => github.com/iLogtail/gonvml v1.0.0
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.12
 	github.com/pingcap/parser => github.com/iLogtail/parser v0.0.0-20210415081931-48e7f467fd74-ilogtail
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus v0.35.0
 	github.com/pyroscope-io/jfr-parser => github.com/iLogtail/jfr-parser v0.6.0
